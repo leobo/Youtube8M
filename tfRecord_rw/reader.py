@@ -23,52 +23,24 @@ def transfer_list_to_tfqueue(list):
     """
     Convert a list to tensorflow queue
     :param list: A list that is needed to convert
-    :return: A converted tensorflow queue
+    :return: A converted tensorflow FIFO queue
     """
-    queue = tf.RandomShuffleQueue(capacity=len(list), min_after_dequeue=0, dtypes=tf.string)
-    queue.enqueue_many(tf.convert_to_tensor(list, dtype=tf.string))
-    return queue
+
+    return tf.train.string_input_producer(list, capacity=1)
 
 
 if __name__ == '__main__':
-    # with tf.Session() as sess:
-    #     list = global_file_path_reader(global_var.testPath, "tfrecord")
-    #     queue = transfer_list_to_tfqueue(list)
-    #     Atfreader = tfreader.YT8MFrameFeatureReader()
-    #     features = Atfreader.prepare_reader(filename_queue=queue)
-    #     print(sess.run(tf.report_uninitialized_variables()))
-    #     sess.run(features)
-    # print(queue.dequeue())
-
     with tf.Session() as sess:
-        # Create a list of filenames and pass it to a queue
-        filename_queue = tf.train.string_input_producer(["/Users/leo/Academic/Youtube8M/test_path/train0a.tfrecord"],
-                                                        num_epochs=1)
-        # Define a reader and read the next record
-        reader = tf.TFRecordReader()
-        _, serialized_example = reader.read(filename_queue)
-        contexts, feature = tf.parse_single_sequence_example(
-            serialized_example,
-            context_features={"video_id": tf.FixedLenFeature(
-                [], tf.string),
-                "labels": tf.VarLenFeature(tf.int64)},
-            sequence_features={
-                feature_name: tf.FixedLenSequenceFeature([], dtype=tf.string)
-                for feature_name in ["inc3"]
-            })
+        sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
+        file_name_list = global_file_path_reader("/Users/leo/Academic/Youtube8M/test_path/", "tfrecord")
+        file_name_queue = transfer_list_to_tfqueue(file_name_list)
+        batch_video_ids, batch_video_matrix, batch_labels, batch_frames = \
+            tfreader.YT8MFrameFeatureReader().prepare_reader(filename_queue=file_name_queue)
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+        sess.run([batch_video_ids, batch_video_matrix, batch_labels, batch_frames])
+        coord.request_stop()
+        coord.join(threads)
+        print(batch_frames)
 
-        # Decode the record read by the reader
-        features = tf.parse_single_sequence_example(serialized_example, context_features=contexts, sequence_features=feature)
-        # Convert the image data from string back to the numbers
-        image = tf.decode_raw(features['video_id'], tf.float32)
 
-        # Cast label data into int32
-        label = tf.cast(features['labels'], tf.int32)
-        # Reshape image data into the original shape
-        image = tf.reshape(image, [224, 224, 3])
-
-        # Any preprocessing here ...
-
-        # Creates batches by randomly shuffling tensors
-        images, labels = tf.train.shuffle_batch([image, label], batch_size=10, capacity=30, num_threads=1,
-                                                min_after_dequeue=10)

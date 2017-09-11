@@ -253,5 +253,12 @@ class YT8MFrameFeatureReader(BaseReader):
     batch_labels = tf.expand_dims(labels, 0)
     batch_frames = tf.expand_dims(num_frames, 0)
 
+    # with tf.Session() as sess:
+    #     coord = tf.train.Coordinator()
+    #     threads = tf.train.start_queue_runners(coord=coord, sess=sess)
+    #     sess.run([batch_video_ids, batch_video_matrix, batch_labels, batch_frames])
+    #     coord.request_stop()
+    #     coord.join(threads)
+
     return batch_video_ids, batch_video_matrix, batch_labels, batch_frames
 
