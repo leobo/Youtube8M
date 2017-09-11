@@ -32,7 +32,7 @@ def transfer_list_to_tfqueue(list):
 if __name__ == '__main__':
     with tf.Session() as sess:
         sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
-        file_name_list = global_file_path_reader("/Users/leo/Academic/Youtube8M/test_path/", "tfrecord")
+        file_name_list = global_file_path_reader("/home/yang/PycharmProject_datasets/Youtube8M_dataset/Youtube8M_frameFeature/test_path", "tfrecord")
         file_name_queue = transfer_list_to_tfqueue(file_name_list)
         batch_video_ids, batch_video_matrix, batch_labels, batch_frames = \
             tfreader.YT8MFrameFeatureReader().prepare_reader(filename_queue=file_name_queue)
@@ -41,6 +41,8 @@ if __name__ == '__main__':
         sess.run([batch_video_ids, batch_video_matrix, batch_labels, batch_frames])
         coord.request_stop()
         coord.join(threads)
-        print(batch_frames)
+        a = tf.Print(batch_labels, [batch_labels], message="this is")
+        sess.run(a)
+        print("done")
 
 

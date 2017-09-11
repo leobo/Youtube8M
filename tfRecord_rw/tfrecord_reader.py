@@ -132,7 +132,7 @@ class YT8MFrameFeatureReader(BaseReader):
   def __init__(self,
                num_classes=4716,
                feature_sizes=[1024],
-               feature_names=["inc3"],
+               feature_names=["rgb"],
                max_frames=300):
     """Construct a YT8MFrameFeatureReader.
     Args:
