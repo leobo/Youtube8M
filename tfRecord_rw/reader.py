@@ -39,10 +39,11 @@ if __name__ == '__main__':
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         sess.run([batch_video_ids, batch_video_matrix, batch_labels, batch_frames])
+        print(sess.run(batch_labels))
         coord.request_stop()
         coord.join(threads)
-        a = tf.Print(batch_labels, [batch_labels], message="this is")
-        sess.run(a)
+        # a = tf.Print(batch_video_matrix, [batch_video_matrix], message="this is")
+        # sess.run(a)
         print("done")
 
 
