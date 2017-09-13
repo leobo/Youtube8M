@@ -25,7 +25,6 @@ def transfer_list_to_tfqueue(list):
     :param list: A list that is needed to convert
     :return: A converted tensorflow FIFO queue
     """
-
     return tf.train.string_input_producer(list, capacity=1)
 
 
@@ -36,12 +35,20 @@ if __name__ == '__main__':
         file_name_queue = transfer_list_to_tfqueue(file_name_list)
         batch_video_ids, batch_video_matrix, batch_labels, batch_frames = \
             tfreader.YT8MFrameFeatureReader().prepare_reader(filename_queue=file_name_queue)
+        # sess.run([batch_video_ids, batch_video_matrix, batch_labels, batch_frames])
+
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-        sess.run([batch_video_ids, batch_video_matrix, batch_labels, batch_frames])
-        print(sess.run(batch_labels))
+
+        for i in range(batch_labels.get_shape()[0]):
+            a = tf.reshape(batch_labels[i],[])
+            x = tf.cond(tf.equal(batch_labels[i], True), true_fn= lambda:tf.Print(batch_labels[i], [batch_labels[i]], message="value"), false_fn=lambda:tf.Print(batch_labels[i], [batch_labels[i]], message="value"))
+            sess.run(x)
+
+
         coord.request_stop()
         coord.join(threads)
+
         # a = tf.Print(batch_video_matrix, [batch_video_matrix], message="this is")
         # sess.run(a)
         print("done")
